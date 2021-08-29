@@ -1,0 +1,13 @@
+import { 
+    {{#if hasBody}} {{{ bodyInterface }}}, {{/if}}
+    {{#if hasQuery}} {{{ queryInterface }}}, {{/if}}
+    {{#if hasPathParams}} {{{ pathParamsInterface }}}, {{/if}}
+    {{{ routeSuccessInterface }}}    
+} from '{{{ routeInterfaceRelativePath }}}';
+import { RequestError, RequestSuccess } from '{{{ requestTypeRelativePath }}}';
+
+export type {{{ functionInterfaceName }}} = ({{#ifOr hasBody hasQuery hasPathParams}}params: {
+    {{#if hasBody}} body: {{{ bodyInterface }}}; {{/if}}
+    {{#if hasQuery}} query: {{{ queryInterface }}}; {{/if}}
+    {{#if hasPathParams}} pathParams: {{{ pathParamsInterface }}}; {{/if}}
+}{{/ifOr}}) => Promise<RequestSuccess<{{{ routeSuccessInterface }}}> | RequestError>;

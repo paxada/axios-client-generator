@@ -1,0 +1,47 @@
+{
+  "name": "@paxada/axios-client-generator",
+  "version": "1.0.4",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest --coverage",
+    "build": "rm -rf ./dist && tsc  && cp -r templates dist/templates",
+    "watch": "tsc -w",
+    "start": "npm run build && node dist/index.js",
+    "dev": "concurrently -k -n \"Typescript,Node\" -p \"[{name}]\" -c \"blue,green\" \"tsc --watch\" \"nodemon\"",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test",
+    "publish:patch": "npm version patch && npm publish --access public"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "change-case": "^4.1.1",
+    "commander": "^6.0.0",
+    "fs-extra": "^9.0.1",
+    "handlebars": "^4.7.6",
+    "inquirer": "^7.3.3",
+    "lodash": "^4.17.21",
+    "mentine": "^1.0.32",
+    "module-alias": "^2.2.2",
+    "open": "^8.0.2",
+    "openapi3-ts": "^1.4.0",
+    "plop": "^2.7.4",
+    "prettier": "^2.1.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.1",
+    "@types/jest": "^26.0.9",
+    "concurrently": "^5.2.0",
+    "cpx": "^1.5.0",
+    "jest": "^26.2.2",
+    "nodemon": "^2.0.4",
+    "ts-jest": "^26.1.4",
+    "typescript": "^3.9.7"
+  },
+  "bin": {
+    "paxada-axios-client-generate": "dist/index.js"
+  },
+  "types": "dist/index.d.ts"
+}

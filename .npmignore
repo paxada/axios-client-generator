@@ -1,0 +1,14 @@
+src
+tsconfig.json
+tslint.json
+.prettierrc
+node_modules
+!dist/templates/Project/src
+!dist/templates/Project/tsconfig.json
+!dist/templates/Project/tslint.json
+!dist/templates/Project/.prettierrc
+!dist/templates/Project/.gitignore
+!dist/templates/Project/.env
+!dist/templates/Project/.eslintignore
+!dist/templates/Project/.eslintrc
+!dist/templates/Project/.prettierrc
