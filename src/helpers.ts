@@ -112,7 +112,7 @@ export const buildTypeImportString = (
   return data
     .map(
       ({ functionInterfaceName, projectSourcePath, typeFilePath }) =>
-        `import { ${functionInterfaceName} } from './${buildRelativeImport(projectSourcePath, typeFilePath)}`,
+        `import { ${functionInterfaceName} } from './${buildRelativeImport(projectSourcePath, typeFilePath)}'`,
     )
     .join('\n');
 };
