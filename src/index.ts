@@ -21,6 +21,7 @@ import { getAllRoutesFilePaths, getRouteSuccessInterface } from './projectParsin
 import { buildRouteData } from './route.helper';
 import { ClientMetadata } from './type';
 import { compiledProjectPath, compileTypescriptProject } from './typescript_compiler';
+import { addAliasesInTsConfig } from './addAliasesInTsConfig';
 global.require = require;
 
 async function runNpmInstall(path: string) {
@@ -131,6 +132,9 @@ export const initializeProject = async (path) => {
   await insert(typeImports)
     .aboveLineContaining('[INSERT CLIENT IMPORTS]')
     .inFile(clientMetadata.files.clientTypes.absolutePath);
+
+  console.log('Add aliases in tsconfig.json');
+  addAliasesInTsConfig({ projectFolderPath: projectFolder, srcPath: srcFolder });
 
   console.log('Creating client methods');
   clientMetadata.routes.forEach((route) => {
