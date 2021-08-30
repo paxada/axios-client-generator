@@ -19,7 +19,7 @@ export const {{{ functionName }}} = ({ baseUrl, headers }: BaseParams): {{{ func
 > => {
     try {
         {{#ifOr hasBody hasQuery hasPathParams}} const { {{#if hasQuery}} query, {{/if}} {{#if hasBody}} body, {{/if}} {{#if hasPathParams}} pathParams {{/if}} } = params {{/ifOr}}
-        {{#if hasQuery}} const queryString = query ? `?${new URLSearchParams(query).toString()}` : ''; {{/if}}
+        {{#if hasQuery}} const queryString = query ? `?${new URLSearchParams(query as unknown as Record<string, string>).toString()}` : ''; {{/if}}
         const url = urlJoin(baseUrl, `{{{ routePath }}}`{{#if hasQuery}} , queryString {{/if}});
         const result = await axios.{{{ method }}}<{{{ routeSuccessInterface }}}>(url,{{#if hasBody}} body,{{/if}} { headers });
         return { hasFailed: false, status: result.status, data: result.data };
