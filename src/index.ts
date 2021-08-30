@@ -41,7 +41,7 @@ export const initializeProject = async (path) => {
   console.log('Removing existing client');
   await remove(path);
   console.log('Initializing new client');
-  await copy(join(__dirname, 'templates/Project'), path, { overwrite: true });
+  await copy(join(__dirname, 'templates/project'), path, { overwrite: true });
   const projectName = process.cwd().split('/').pop();
   await insertProjectName(path, projectName);
   await runNpmInstall(path);
