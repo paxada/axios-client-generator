@@ -2,7 +2,7 @@
 import { exec } from 'child_process';
 import { copy, remove } from 'fs-extra';
 import { join } from 'path';
-import { insert, replaceInFile } from './files.helpers';
+import { insert } from './files.helpers';
 import './handlebars.helpers';
 import { createFileFromHBS } from './handlebars.helpers';
 import {
@@ -24,6 +24,9 @@ import { compiledProjectPath, compileTypescriptProject } from './typescript_comp
 import { addAliasesInTsConfig } from './addAliasesInTsConfig';
 import { getPackageJsonData } from './getPackageJsonData';
 import { upgradePackageVersion } from './upgradePackageVersion';
+import { Command } from 'commander';
+import { checkExistingPaths } from './checkExistingPaths';
+import { createExportsString } from './createExportsString';
 global.require = require;
 
 const sleep = (time: number) => new Promise((r) => setTimeout(r, time));
@@ -38,47 +41,49 @@ async function runNpmInstall(path: string) {
   return exec(`cd ${path} && npm i`);
 }
 
-async function insertProjectName(path: string, projectName: string) {
-  const configFiles = [{ path: `${path}/package.json`, value: projectName.toLowerCase() }];
-  return Promise.all(
-    configFiles.map((configFile) => {
-      return replaceInFile(configFile.path, 'projectname', configFile.value);
-    }),
-  );
-}
-
 export const initializeProject = async (path) => {
-  console.log('Removing existing client');
-  await remove(path);
   console.log('Initializing new client');
   await copy(join(__dirname, 'templates/project'), path, { overwrite: true });
-  const projectName = process.cwd().split('/').pop();
-  await insertProjectName(path, projectName);
   await runNpmInstall(path);
 };
 
-(async () => {
-  console.log('Compiling api');
-  const { error } = await compileTypescriptProject();
-  if (error) throw new Error(error.message);
-  console.log('Registering aliases');
-  await registerModuleAliases(join(process.cwd(), 'package.json'));
-  console.log('Parsing project');
+const parseProject = async (): Promise<ClientMetadata> => {
   const routePaths = await getAllRoutesFilePaths();
 
-  const serviceFolder = process.cwd();
-  const projectFolder = join(serviceFolder, 'axios-client');
-  const srcFolder = join(projectFolder, 'src');
-  const { version: currentPackageVersion } = getPackageJsonData(projectFolder);
-  const { name: serviceName } = getPackageJsonData(serviceFolder);
+  const projectFolder = process.cwd();
+  const clientFolder = join(projectFolder, 'axios-client');
+  const srcFolder = join(clientFolder, 'src');
+  const { version: currentPackageVersion } = getPackageJsonData(clientFolder);
+  const { name: serviceName, author } = getPackageJsonData(projectFolder);
 
   const newPackageVersion = upgradePackageVersion(currentPackageVersion);
-  const clientMetadata: ClientMetadata = {
-    projectFolder,
+  const routes = await Promise.all(routePaths.map((routeFilePath) => buildRouteData(routeFilePath, srcFolder)));
+
+  const clientTypings = formatClientTypingsString(
+    await buildClientTypings(
+      routes.map((route) => ({
+        folders: route.folders,
+        data: route,
+      })),
+    ),
+  );
+
+  const clientObject = formatClientObjectString(
+    await buildClientObject(
+      routes.map((route) => ({
+        folders: route.folders,
+        data: route,
+      })),
+    ),
+  );
+
+  return {
+    clientFolder,
     srcFolder,
     packageVersion: newPackageVersion,
-    serviceFolder,
+    projectFolder,
     serviceName,
+    author,
     files: {
       clientTypes: {
         absolutePath: join(srcFolder, 'client.types.ts'),
@@ -93,28 +98,41 @@ export const initializeProject = async (path) => {
         name: 'request.types.ts',
       },
     },
-    routes: await Promise.all(routePaths.map((routeFilePath) => buildRouteData(routeFilePath, srcFolder))),
+    clientTypings,
+    clientObject,
+    routes,
   };
+};
 
-  const clientTypings = formatClientTypingsString(
-    await buildClientTypings(
-      clientMetadata.routes.map((route) => ({
-        folders: route.folders,
-        data: route,
-      })),
-    ),
-  );
+const getArgs = (): { extraExportPaths: Array<string> } => {
+  const program = new Command();
+  program.option('-e, --extra-export <paths...>', 'add extra export paths');
+  program.parse(process.argv);
+  const options = program.opts();
+  return {
+    extraExportPaths: options['extraExport'] === undefined ? [] : options['extraExport'],
+  };
+};
 
-  const clientObject = formatClientObjectString(
-    await buildClientObject(
-      clientMetadata.routes.map((route) => ({
-        folders: route.folders,
-        data: route,
-      })),
-    ),
-  );
+(async () => {
+  const { extraExportPaths } = getArgs();
 
-  await initializeProject(clientMetadata.projectFolder);
+  console.log('Compiling api');
+  const { error } = await compileTypescriptProject();
+  if (error) throw new Error(error.message);
+
+  console.log('Registering aliases');
+  await registerModuleAliases(join(process.cwd(), 'package.json'));
+
+  console.log('Parsing project');
+  const clientMetadata = await parseProject();
+
+  console.log('Checking Extra exports');
+  const isValidExtraExports = checkExistingPaths(extraExportPaths.map((path) => join(clientMetadata.srcFolder, path)));
+  if (isValidExtraExports.hasFailed) throw new Error(isValidExtraExports.message);
+
+  console.log('Writing axios-client');
+  await initializeProject(clientMetadata.clientFolder);
 
   const clientImports = buildClientImportString(
     clientMetadata.routes.map((route) => ({
@@ -123,11 +141,19 @@ export const initializeProject = async (path) => {
       projectSourcePath: clientMetadata.srcFolder,
     })),
   );
+
   const clientExports = buildClientExportsString(
     clientMetadata.routes.map((route) => ({
       projectSourcePath: clientMetadata.srcFolder,
       interfaceFilePath: route.interfaceFilePath,
       typeFilePath: route.generated.typeFilePath,
+    })),
+  );
+
+  const extraExports = createExportsString(
+    extraExportPaths.map((path) => ({
+      basePath: clientMetadata.srcFolder,
+      targetPath: join(clientMetadata.srcFolder, path),
     })),
   );
 
@@ -140,10 +166,14 @@ export const initializeProject = async (path) => {
   );
 
   await insert(clientExports).aboveLineContaining('[INSERT EXPORTS]').inFile(clientMetadata.files.index.absolutePath);
-  await insert(clientImports).aboveLineContaining('[INSERT IMPORTS]').inFile(clientMetadata.files.index.absolutePath);
-  await insert(clientObject).aboveLineContaining('[INSERT CLIENT]').inFile(clientMetadata.files.index.absolutePath);
+  await insert(extraExports).aboveLineContaining('[INSERT EXPORTS]').inFile(clientMetadata.files.index.absolutePath);
 
-  await insert(clientTypings)
+  await insert(clientImports).aboveLineContaining('[INSERT IMPORTS]').inFile(clientMetadata.files.index.absolutePath);
+  await insert(clientMetadata.clientObject)
+    .aboveLineContaining('[INSERT CLIENT]')
+    .inFile(clientMetadata.files.index.absolutePath);
+
+  await insert(clientMetadata.clientTypings)
     .aboveLineContaining('[INSERT CLIENT TYPINGS]')
     .inFile(clientMetadata.files.clientTypes.absolutePath);
   await insert(typeImports)
@@ -152,7 +182,7 @@ export const initializeProject = async (path) => {
 
   console.log('Add aliases tsconfig.json');
   addAliasesInTsConfig({
-    projectFolderPath: clientMetadata.projectFolder,
+    projectFolderPath: clientMetadata.clientFolder,
     srcPath: clientMetadata.srcFolder,
   });
 
@@ -163,7 +193,7 @@ export const initializeProject = async (path) => {
       version: clientMetadata.packageVersion,
       serviceName: clientMetadata.serviceName,
     },
-    filePath: join(clientMetadata.projectFolder, 'package.json'),
+    filePath: join(clientMetadata.clientFolder, 'package.json'),
   });
 
   console.log('Creating client methods');
@@ -219,7 +249,7 @@ export const initializeProject = async (path) => {
 
   await sleep(2000);
 
-  await runNpmRunPrettify(clientMetadata.projectFolder);
+  await runNpmRunPrettify(clientMetadata.clientFolder);
 
   console.log('Done');
 })();

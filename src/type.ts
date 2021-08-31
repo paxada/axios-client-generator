@@ -23,11 +23,12 @@ export type RouteData = {
 };
 
 export type ClientMetadata = {
-  projectFolder: string;
+  clientFolder: string;
   srcFolder: string;
   packageVersion: string;
-  serviceFolder: string;
+  projectFolder: string;
   serviceName: string;
+  author: string;
   files: {
     requestTypes: {
       absolutePath: string;
@@ -42,5 +43,7 @@ export type ClientMetadata = {
       name: string;
     };
   };
+  clientTypings: string;
+  clientObject: string;
   routes: Array<RouteData>;
 };
