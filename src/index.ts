@@ -48,7 +48,7 @@ export const initializeProject = async (path) => {
   await runNpmInstall(path);
 };
 
-const parseProject = async (clientName: string): Promise<ClientMetadata> => {
+const parseProject = async (clientName?: string): Promise<ClientMetadata> => {
   const routePaths = await getAllRoutesFilePaths();
 
   const projectFolder = process.cwd();
@@ -107,21 +107,23 @@ const parseProject = async (clientName: string): Promise<ClientMetadata> => {
   };
 };
 
-const getArgs = (): { extraExportPaths: Array<string>; clientName?: string } => {
+const getArgs = (): { extraExportPaths: Array<string>; clientName?: string; packageAlias?: string } => {
   const program = new Command();
   program
     .option('-e, --extra-export <paths...>', 'Add extra export paths')
-    .option('-cn, --client-name <string>', 'Client name');
+    .option('-cn, --client-name <string>', 'Client name')
+    .option('-pa, --package-alias <string>', 'Package alias in package.json name');
   program.parse(process.argv);
   const options = program.opts();
   return {
     extraExportPaths: options['extraExport'] === undefined ? [] : options['extraExport'],
     clientName: options['clientName'],
+    packageAlias: options['packageAlias'],
   };
 };
 
 (async () => {
-  const { extraExportPaths, clientName } = getArgs();
+  const { extraExportPaths, clientName, packageAlias } = getArgs();
 
   console.log('Compiling api');
   const { error } = await compileTypescriptProject();
@@ -200,6 +202,7 @@ const getArgs = (): { extraExportPaths: Array<string>; clientName?: string } => 
     data: {
       version: clientMetadata.packageVersion,
       clientName: clientMetadata.clientName,
+      packageAlias: packageAlias === undefined ? '' : `@${packageAlias}/`,
     },
     filePath: join(clientMetadata.clientFolder, 'package.json'),
   });
