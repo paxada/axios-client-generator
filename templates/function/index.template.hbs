@@ -15,12 +15,12 @@ export const {{{ functionName }}} = ({ baseUrl, headers }: BaseParams): {{{ func
     {{#if hasQuery}} query: {{{ queryInterface }}}; {{/if}}
     {{#if hasPathParams}} pathParams: {{{ pathParamsInterface }}}; {{/if}}
 }{{/ifOr}}): Promise<
-    RequestSuccess<{{{ routeSuccessInterface }}}> | RequestError
+    RequestSuccess<{{#if routeSuccessInterface}}{{{ routeSuccessInterface }}}{{/if}}{{#ifNot routeSuccessInterface}}void{{/ifNot}}> | RequestError
 > => {
     try {
         {{#ifOr hasBody hasQuery hasPathParams}} const { {{#if hasQuery}} query, {{/if}} {{#if hasBody}} body, {{/if}} {{#if hasPathParams}} pathParams {{/if}} } = params {{/ifOr}}
         const url = urlJoin(baseUrl, `{{{ routePath }}}`);
-        const result = await axios.{{{ method }}}<{{{ routeSuccessInterface }}}>(url,{{#if hasBody}} body,{{/if}} { headers{{#if hasQuery}}, params: query{{/if}} });
+const result = await axios.{{{ method }}}<{{#if routeSuccessInterface}}{{{ routeSuccessInterface }}}{{/if}}{{#ifNot routeSuccessInterface}}void{{/ifNot}}>(url,{{#if hasBody}} body,{{/if}} { headers{{#if hasQuery}}, params: query{{/if}} });
         return { hasFailed: false, status: result.status, data: result.data };
     } catch (e) {
         return {

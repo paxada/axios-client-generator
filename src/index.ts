@@ -115,7 +115,6 @@ const getArgs = (): { extraExportPaths: Array<string>; folderName?: string; pack
     .option('-pn, --package-name <string>', 'Package name');
   program.parse(process.argv);
   const options = program.opts();
-  console.log({ options });
   return {
     extraExportPaths: options['extraExport'] === undefined ? [] : options['extraExport'],
     packageName: options['packageName'],
@@ -203,6 +202,7 @@ const getArgs = (): { extraExportPaths: Array<string>; folderName?: string; pack
     data: {
       version: clientMetadata.packageVersion,
       packageName,
+      folderName,
     },
     filePath: join(clientMetadata.clientFolder, 'package.json'),
   });

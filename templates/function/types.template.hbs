@@ -10,4 +10,4 @@ export type {{{ functionInterfaceName }}} = ({{#ifOr hasBody hasQuery hasPathPar
     {{#if hasBody}} body: {{{ bodyInterface }}}; {{/if}}
     {{#if hasQuery}} query: {{{ queryInterface }}}; {{/if}}
     {{#if hasPathParams}} pathParams: {{{ pathParamsInterface }}}; {{/if}}
-}{{/ifOr}}) => Promise<RequestSuccess<{{{ routeSuccessInterface }}}> | RequestError>;
+}{{/ifOr}}) => Promise<RequestSuccess<{{#if routeSuccessInterface}}{{{ routeSuccessInterface }}}{{/if}}{{#ifNot routeSuccessInterface}}void{{/ifNot}}> | RequestError>;

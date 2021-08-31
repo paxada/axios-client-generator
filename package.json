@@ -11,7 +11,7 @@
     "dev": "concurrently -k -n \"Typescript,Node\" -p \"[{name}]\" -c \"blue,green\" \"tsc --watch\" \"nodemon\"",
     "prepare": "npm run build",
     "prepublishOnly": "npm test",
-    "publish:patch": "npm version patch && npm publish --access public"
+    "publish:patch": "npm version patch && npm publish --access public && git push --noverify"
   },
   "keywords": [],
   "author": "",
