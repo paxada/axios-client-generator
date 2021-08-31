@@ -1,7 +1,7 @@
 {
-    "name": "projectname-client",
-    "version": "1.0.135",
-    "description": "projectname Client",
+    "name": "@waapi/{{{ serviceName }}}-client",
+    "version": "{{{ version }}}",
+    "description": "{{{ serviceName }}}'s Client",
     "main": "dist/client/src/index.js",
     "types": "dist/client/src/index.d.ts",
     "scripts": {
@@ -9,7 +9,8 @@
         "start": "npm run build && node dist/index.js",
         "lint": "npx eslint ./src --ext .js,.jsx,.ts,.tsx --fix",
         "package-publish": "npm run build && npm version patch --force && npm publish",
-        "tsCheck": "tsc --noEmit"
+        "tsCheck": "tsc --noEmit",
+        "prettify": "prettier --write ./"
     },
     "author": "Waapi",
     "license": "ISC",

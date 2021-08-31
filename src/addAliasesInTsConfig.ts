@@ -19,7 +19,7 @@ export const addAliasesInTsConfig = (params: { projectFolderPath: string; srcPat
     let clientTsConfigJson = JSON.parse(clientRawData);
     if ('compilerOptions' in clientTsConfigJson && typeof clientTsConfigJson.compilerOptions === 'object') {
       clientTsConfigJson.compilerOptions.paths = clientPaths;
-      writeFileSync(join(projectFolderPath, 'tsconfig.json'), clientTsConfigJson);
+      writeFileSync(join(projectFolderPath, 'tsconfig.json'), JSON.stringify(clientTsConfigJson));
     }
   }
 };

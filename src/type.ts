@@ -25,6 +25,9 @@ export type RouteData = {
 export type ClientMetadata = {
   projectFolder: string;
   srcFolder: string;
+  packageVersion: string;
+  serviceFolder: string;
+  serviceName: string;
   files: {
     requestTypes: {
       absolutePath: string;

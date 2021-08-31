@@ -22,7 +22,16 @@ import { buildRouteData } from './route.helper';
 import { ClientMetadata } from './type';
 import { compiledProjectPath, compileTypescriptProject } from './typescript_compiler';
 import { addAliasesInTsConfig } from './addAliasesInTsConfig';
+import { getPackageJsonData } from './getPackageJsonData';
+import { upgradePackageVersion } from './upgradePackageVersion';
 global.require = require;
+
+const sleep = (time: number) => new Promise((r) => setTimeout(r, time));
+
+async function runNpmRunPrettify(path: string) {
+  console.log('Executing... npm run prettify');
+  return exec(`cd ${path} && npm run prettify`);
+}
 
 async function runNpmInstall(path: string) {
   console.log('Executing... npm install');
@@ -57,11 +66,19 @@ export const initializeProject = async (path) => {
   console.log('Parsing project');
   const routePaths = await getAllRoutesFilePaths();
 
-  const projectFolder = join(process.cwd(), 'axios-client');
+  const serviceFolder = process.cwd();
+  const projectFolder = join(serviceFolder, 'axios-client');
   const srcFolder = join(projectFolder, 'src');
+  const { version: currentPackageVersion } = getPackageJsonData(projectFolder);
+  const { name: serviceName } = getPackageJsonData(serviceFolder);
+
+  const newPackageVersion = upgradePackageVersion(currentPackageVersion);
   const clientMetadata: ClientMetadata = {
     projectFolder,
     srcFolder,
+    packageVersion: newPackageVersion,
+    serviceFolder,
+    serviceName,
     files: {
       clientTypes: {
         absolutePath: join(srcFolder, 'client.types.ts'),
@@ -133,8 +150,21 @@ export const initializeProject = async (path) => {
     .aboveLineContaining('[INSERT CLIENT IMPORTS]')
     .inFile(clientMetadata.files.clientTypes.absolutePath);
 
-  console.log('Add aliases in tsconfig.json');
-  addAliasesInTsConfig({ projectFolderPath: projectFolder, srcPath: srcFolder });
+  console.log('Add aliases tsconfig.json');
+  addAliasesInTsConfig({
+    projectFolderPath: clientMetadata.projectFolder,
+    srcPath: clientMetadata.srcFolder,
+  });
+
+  console.log('Creating package.json.template.hbs');
+  createFileFromHBS({
+    templatePath: join(__dirname, 'templates', 'function', 'package.json.template.hbs'),
+    data: {
+      version: clientMetadata.packageVersion,
+      serviceName: clientMetadata.serviceName,
+    },
+    filePath: join(clientMetadata.projectFolder, 'package.json'),
+  });
 
   console.log('Creating client methods');
   clientMetadata.routes.forEach((route) => {
@@ -186,5 +216,10 @@ export const initializeProject = async (path) => {
     });
   });
   await remove(compiledProjectPath);
+
+  await sleep(2000);
+
+  await runNpmRunPrettify(clientMetadata.projectFolder);
+
   console.log('Done');
 })();

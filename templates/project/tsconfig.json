@@ -1,16 +1,16 @@
 {
     "compilerOptions": {
-      "target": "ES6",
+      "target": "ESNext",
       "module": "commonjs",
       "declaration": true,
       "outDir": "./dist",
       "strict": true,
       "allowSyntheticDefaultImports": true,
+      "baseUrl": "src"
     },
     "jsRules": {
       "no-empty": true
     },
     "include": ["src/**/*.ts"],
     "exclude": ["node_modules"]
-  }
-  
+}
