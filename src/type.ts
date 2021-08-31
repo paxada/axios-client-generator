@@ -27,7 +27,7 @@ export type ClientMetadata = {
   srcFolder: string;
   packageVersion: string;
   projectFolder: string;
-  serviceName: string;
+  clientName: string;
   author: string;
   files: {
     requestTypes: {

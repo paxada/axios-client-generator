@@ -43,18 +43,21 @@ async function runNpmInstall(path: string) {
 
 export const initializeProject = async (path) => {
   console.log('Initializing new client');
+  await remove(path);
   await copy(join(__dirname, 'templates/project'), path, { overwrite: true });
   await runNpmInstall(path);
 };
 
-const parseProject = async (): Promise<ClientMetadata> => {
+const parseProject = async (clientName: string): Promise<ClientMetadata> => {
   const routePaths = await getAllRoutesFilePaths();
 
   const projectFolder = process.cwd();
-  const clientFolder = join(projectFolder, 'axios-client');
+  const { name: serviceName, author } = getPackageJsonData(projectFolder);
+
+  const finalClientName = clientName || `${serviceName}-client`;
+  const clientFolder = join(projectFolder, finalClientName);
   const srcFolder = join(clientFolder, 'src');
   const { version: currentPackageVersion } = getPackageJsonData(clientFolder);
-  const { name: serviceName, author } = getPackageJsonData(projectFolder);
 
   const newPackageVersion = upgradePackageVersion(currentPackageVersion);
   const routes = await Promise.all(routePaths.map((routeFilePath) => buildRouteData(routeFilePath, srcFolder)));
@@ -82,7 +85,7 @@ const parseProject = async (): Promise<ClientMetadata> => {
     srcFolder,
     packageVersion: newPackageVersion,
     projectFolder,
-    serviceName,
+    clientName: finalClientName,
     author,
     files: {
       clientTypes: {
@@ -104,18 +107,21 @@ const parseProject = async (): Promise<ClientMetadata> => {
   };
 };
 
-const getArgs = (): { extraExportPaths: Array<string> } => {
+const getArgs = (): { extraExportPaths: Array<string>; clientName?: string } => {
   const program = new Command();
-  program.option('-e, --extra-export <paths...>', 'add extra export paths');
+  program
+    .option('-e, --extra-export <paths...>', 'Add extra export paths')
+    .option('-cn, --client-name <string>', 'Client name');
   program.parse(process.argv);
   const options = program.opts();
   return {
     extraExportPaths: options['extraExport'] === undefined ? [] : options['extraExport'],
+    clientName: options['clientName'],
   };
 };
 
 (async () => {
-  const { extraExportPaths } = getArgs();
+  const { extraExportPaths, clientName } = getArgs();
 
   console.log('Compiling api');
   const { error } = await compileTypescriptProject();
@@ -125,13 +131,15 @@ const getArgs = (): { extraExportPaths: Array<string> } => {
   await registerModuleAliases(join(process.cwd(), 'package.json'));
 
   console.log('Parsing project');
-  const clientMetadata = await parseProject();
+  const clientMetadata = await parseProject(clientName);
 
   console.log('Checking Extra exports');
-  const isValidExtraExports = checkExistingPaths(extraExportPaths.map((path) => join(clientMetadata.srcFolder, path)));
+  const isValidExtraExports = checkExistingPaths(
+    extraExportPaths.map((path) => join(clientMetadata.projectFolder, path)),
+  );
   if (isValidExtraExports.hasFailed) throw new Error(isValidExtraExports.message);
 
-  console.log('Writing axios-client');
+  console.log('Writing ' + clientName);
   await initializeProject(clientMetadata.clientFolder);
 
   const clientImports = buildClientImportString(
@@ -153,7 +161,7 @@ const getArgs = (): { extraExportPaths: Array<string> } => {
   const extraExports = createExportsString(
     extraExportPaths.map((path) => ({
       basePath: clientMetadata.srcFolder,
-      targetPath: join(clientMetadata.srcFolder, path),
+      targetPath: join(clientMetadata.projectFolder, path),
     })),
   );
 
@@ -186,12 +194,12 @@ const getArgs = (): { extraExportPaths: Array<string> } => {
     srcPath: clientMetadata.srcFolder,
   });
 
-  console.log('Creating package.json.template.hbs');
+  console.log('Creating package.json');
   createFileFromHBS({
     templatePath: join(__dirname, 'templates', 'function', 'package.json.template.hbs'),
     data: {
       version: clientMetadata.packageVersion,
-      serviceName: clientMetadata.serviceName,
+      clientName: clientMetadata.clientName,
     },
     filePath: join(clientMetadata.clientFolder, 'package.json'),
   });
