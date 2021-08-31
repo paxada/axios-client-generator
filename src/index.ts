@@ -48,14 +48,14 @@ export const initializeProject = async (path) => {
   await runNpmInstall(path);
 };
 
-const parseProject = async (clientName?: string): Promise<ClientMetadata> => {
+const parseProject = async (folderName?: string): Promise<ClientMetadata> => {
   const routePaths = await getAllRoutesFilePaths();
 
   const projectFolder = process.cwd();
   const { name: serviceName, author } = getPackageJsonData(projectFolder);
 
-  const finalClientName = clientName || `${serviceName}-client`;
-  const clientFolder = join(projectFolder, finalClientName);
+  const finalFolderName = folderName || `${serviceName}-client`;
+  const clientFolder = join(projectFolder, finalFolderName);
   const srcFolder = join(clientFolder, 'src');
   const { version: currentPackageVersion } = getPackageJsonData(clientFolder);
 
@@ -85,7 +85,7 @@ const parseProject = async (clientName?: string): Promise<ClientMetadata> => {
     srcFolder,
     packageVersion: newPackageVersion,
     projectFolder,
-    clientName: finalClientName,
+    folderName: finalFolderName,
     author,
     files: {
       clientTypes: {
@@ -107,23 +107,24 @@ const parseProject = async (clientName?: string): Promise<ClientMetadata> => {
   };
 };
 
-const getArgs = (): { extraExportPaths: Array<string>; clientName?: string; packageAlias?: string } => {
+const getArgs = (): { extraExportPaths: Array<string>; folderName?: string; packageName?: string } => {
   const program = new Command();
   program
     .option('-e, --extra-export <paths...>', 'Add extra export paths')
-    .option('-cn, --client-name <string>', 'Client name')
-    .option('-pa, --package-alias <string>', 'Package alias in package.json name');
+    .option('-fn, --folder-name <string>', 'Package alias in package.json name')
+    .option('-pn, --package-name <string>', 'Package name');
   program.parse(process.argv);
   const options = program.opts();
+  console.log({ options });
   return {
     extraExportPaths: options['extraExport'] === undefined ? [] : options['extraExport'],
-    clientName: options['clientName'],
-    packageAlias: options['packageAlias'],
+    packageName: options['packageName'],
+    folderName: options['folderName'],
   };
 };
 
 (async () => {
-  const { extraExportPaths, clientName, packageAlias } = getArgs();
+  const { extraExportPaths, folderName, packageName } = getArgs();
 
   console.log('Compiling api');
   const { error } = await compileTypescriptProject();
@@ -133,7 +134,7 @@ const getArgs = (): { extraExportPaths: Array<string>; clientName?: string; pack
   await registerModuleAliases(join(process.cwd(), 'package.json'));
 
   console.log('Parsing project');
-  const clientMetadata = await parseProject(clientName);
+  const clientMetadata = await parseProject(folderName);
 
   console.log('Checking Extra exports');
   const isValidExtraExports = checkExistingPaths(
@@ -141,7 +142,7 @@ const getArgs = (): { extraExportPaths: Array<string>; clientName?: string; pack
   );
   if (isValidExtraExports.hasFailed) throw new Error(isValidExtraExports.message);
 
-  console.log('Writing ' + clientName);
+  console.log('Writing ' + folderName);
   await initializeProject(clientMetadata.clientFolder);
 
   const clientImports = buildClientImportString(
@@ -201,8 +202,7 @@ const getArgs = (): { extraExportPaths: Array<string>; clientName?: string; pack
     templatePath: join(__dirname, 'templates', 'function', 'package.json.template.hbs'),
     data: {
       version: clientMetadata.packageVersion,
-      clientName: clientMetadata.clientName,
-      packageAlias: packageAlias === undefined ? '' : `@${packageAlias}/`,
+      packageName,
     },
     filePath: join(clientMetadata.clientFolder, 'package.json'),
   });
