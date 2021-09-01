@@ -26,7 +26,7 @@ const result = await axios.{{{ method }}}<{{#if routeSuccessInterface}}{{{ route
         return {
             hasFailed: true,
             status: e?.response?.status,
-            data: e?.response?.data,
+            error: e?.response?.data,
         };
     }
 };

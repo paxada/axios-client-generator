@@ -12,5 +12,5 @@ export type RequestError<
 export type RequestSuccess<T> = {
     hasFailed: false;
     status: number;
-    data: T;
+    error: T;
 };
