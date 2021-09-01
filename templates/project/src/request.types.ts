@@ -6,11 +6,11 @@ export type RequestError<
 > = {
     hasFailed: true;
     status: number;
-    data: T;
+    error: T;
 };
 
 export type RequestSuccess<T> = {
     hasFailed: false;
     status: number;
-    error: T;
+    data: T;
 };
