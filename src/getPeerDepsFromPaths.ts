@@ -15,7 +15,6 @@ const getDepsFromPath = (path: string, moduleAliases: Record<string, string>): A
 
   const { npmDeps, projectDeps } = imports.reduce<{ npmDeps: Array<string>; projectDeps: Array<string> }>(
     (res, dep) => {
-      console.log({ res });
       if (dep.startsWith('@/')) {
         const depPath = replaceAliases(moduleAliases, dep + '.ts');
         return { ...res, projectDeps: [...res.projectDeps, depPath] };
