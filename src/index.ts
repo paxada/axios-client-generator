@@ -27,6 +27,7 @@ import { upgradePackageVersion } from './upgradePackageVersion';
 import { Command } from 'commander';
 import { checkExistingPaths } from './checkExistingPaths';
 import { createExportsString } from './createExportsString';
+import { getPeerDepsFromPaths } from './getPeerDepsFromPaths';
 global.require = require;
 
 const sleep = (time: number) => new Promise((r) => setTimeout(r, time));
@@ -130,7 +131,7 @@ const getArgs = (): { extraExportPaths: Array<string>; folderName?: string; pack
   if (error) throw new Error(error.message);
 
   console.log('Registering aliases');
-  await registerModuleAliases(join(process.cwd(), 'package.json'));
+  await registerModuleAliases(process.cwd());
 
   console.log('Parsing project');
   const clientMetadata = await parseProject(folderName);
@@ -165,6 +166,10 @@ const getArgs = (): { extraExportPaths: Array<string>; folderName?: string; pack
       basePath: clientMetadata.srcFolder,
       targetPath: join(clientMetadata.projectFolder, path),
     })),
+  );
+  const extraExportsPeerDeps = getPeerDepsFromPaths(
+    clientMetadata.projectFolder,
+    extraExportPaths.map((path) => join(clientMetadata.projectFolder, path)),
   );
 
   const typeImports = buildTypeImportString(
@@ -203,6 +208,7 @@ const getArgs = (): { extraExportPaths: Array<string>; folderName?: string; pack
       version: clientMetadata.packageVersion,
       packageName,
       folderName,
+      peerDependencies: extraExportsPeerDeps,
     },
     filePath: join(clientMetadata.clientFolder, 'package.json'),
   });
