@@ -8,6 +8,7 @@ import { createFileFromHBS } from './handlebars.helpers';
 import {
   buildClientExportsString,
   buildClientImportString,
+  buildClientMock,
   buildClientObject,
   buildClientTypings,
   buildRelativeImport,
@@ -81,6 +82,15 @@ const parseProject = async (folderName?: string): Promise<ClientMetadata> => {
     ),
   );
 
+  const clientMock = formatClientObjectString(
+    await buildClientMock(
+      routes.map((route) => ({
+        folders: route.folders,
+        data: route,
+      })),
+    ),
+  );
+
   return {
     clientFolder,
     srcFolder,
@@ -101,10 +111,15 @@ const parseProject = async (folderName?: string): Promise<ClientMetadata> => {
         absolutePath: join(srcFolder, 'request.types.ts'),
         name: 'request.types.ts',
       },
+      requests: {
+        absolutePath: join(srcFolder, 'getAxiosClient.ts'),
+        name: 'getAxiosClient.ts',
+      },
     },
     clientTypings,
     clientObject,
     routes,
+    clientMock,
   };
 };
 
@@ -183,10 +198,12 @@ const getArgs = (): { extraExportPaths: Array<string>; folderName?: string; pack
   await insert(clientExports).aboveLineContaining('[INSERT EXPORTS]').inFile(clientMetadata.files.index.absolutePath);
   await insert(extraExports).aboveLineContaining('[INSERT EXPORTS]').inFile(clientMetadata.files.index.absolutePath);
 
-  await insert(clientImports).aboveLineContaining('[INSERT IMPORTS]').inFile(clientMetadata.files.index.absolutePath);
+  await insert(clientImports)
+    .aboveLineContaining('[INSERT IMPORTS]')
+    .inFile(clientMetadata.files.requests.absolutePath);
   await insert(clientMetadata.clientObject)
     .aboveLineContaining('[INSERT CLIENT]')
-    .inFile(clientMetadata.files.index.absolutePath);
+    .inFile(clientMetadata.files.requests.absolutePath);
 
   await insert(clientMetadata.clientTypings)
     .aboveLineContaining('[INSERT CLIENT TYPINGS]')
@@ -211,6 +228,15 @@ const getArgs = (): { extraExportPaths: Array<string>; folderName?: string; pack
       peerDependencies: extraExportsPeerDeps,
     },
     filePath: join(clientMetadata.clientFolder, 'package.json'),
+  });
+
+  console.log('Creating mock');
+  createFileFromHBS({
+    templatePath: join(__dirname, 'templates', 'function', 'mock.ts.template.hbs'),
+    data: {
+      mockedObject: clientMetadata.clientMock,
+    },
+    filePath: join(clientMetadata.srcFolder, 'mock.ts'),
   });
 
   console.log('Creating client methods');

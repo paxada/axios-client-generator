@@ -42,8 +42,13 @@ export type ClientMetadata = {
       absolutePath: string;
       name: string;
     };
+    requests: {
+      absolutePath: string;
+      name: string;
+    };
   };
   clientTypings: string;
   clientObject: string;
   routes: Array<RouteData>;
+  clientMock: string;
 };

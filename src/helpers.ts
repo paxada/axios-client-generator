@@ -97,6 +97,17 @@ export const buildClientObject = (
   });
 };
 
+export const buildClientMock = (
+  foldersStructure: Array<{
+    folders: Array<string>;
+    data: RouteData;
+  }>,
+): Promise<ClientObject> => {
+  return buildClientObjectFromFolderStructures(foldersStructure, async (folders, data) => {
+    return 'mockFunction()';
+  });
+};
+
 export const formatClientObjectString = (clientObject: ClientObject): string => {
   const stringified = JSON.stringify(clientObject).replaceAll('"', '');
   return stringified.slice(1, stringified.length - 1);

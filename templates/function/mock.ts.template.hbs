@@ -1,0 +1,21 @@
+export const mockAxiosClient = <T>(mockFunction: () => T) => {
+    const mockedObject = { {{{ mockedObject }}} };
+
+    const setHeaders = () => ({
+        ...mockedObject,
+        setHeaders: mockFunction(),
+        setBaseUrl: mockFunction(),
+    });
+
+    const setBaseUrl = () => ({
+        ...mockedObject,
+        setHeaders: mockFunction(),
+        setBaseUrl: mockFunction(),
+    });
+
+    return {
+        setHeaders,
+        setBaseUrl,
+        ...mockedObject
+    }
+}
