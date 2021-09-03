@@ -63,12 +63,6 @@ export const initializeProject = async (path) => {
     extraExportPaths,
   });
 
-  console.log('Checking Extra exports');
-  const isValidExtraExports = checkExistingPaths(
-    extraExportPaths.map((path) => join(clientMetadata.projectFolder, path)),
-  );
-  if (isValidExtraExports.hasFailed) throw new Error(isValidExtraExports.message);
-
   console.log('Writing ' + folderName);
   await initializeProject(clientMetadata.clientFolder);
 

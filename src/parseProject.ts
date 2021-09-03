@@ -12,6 +12,7 @@ import {
 import { join } from 'path';
 import { upgradePackageVersion } from './upgradePackageVersion';
 import { buildRouteData } from './route.helper';
+import { checkExistingPaths } from './checkExistingPaths';
 
 export const parseProject = async (params: {
   folderName?: string;
@@ -37,6 +38,9 @@ export const parseProject = async (params: {
   const finalFolderName = folderName || axiosClientConfig.folderName || `${serviceName}-client`;
   const finalPackageName = packageName || axiosClientConfig.packageName || `${serviceName}-client`;
   const finalExtraExportPaths = extraExportPaths || axiosClientConfig.extraExports || [];
+
+  const isValidExtraExports = checkExistingPaths(finalExtraExportPaths.map((path) => join(projectFolder, path)));
+  if (isValidExtraExports.hasFailed) throw new Error(isValidExtraExports.message);
 
   const clientFolder = join(projectFolder, finalFolderName);
   const srcFolder = join(clientFolder, 'src');
