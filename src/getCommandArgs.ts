@@ -19,7 +19,7 @@ export const getCommandArgs = (): {
   program.parse(process.argv);
   const options = program.opts();
   return {
-    extraExportPaths: options['extraExport'] === undefined ? [] : options['extraExport'],
+    extraExportPaths: options['extraExport'],
     packageName: options['packageName'],
     folderName: options['folderName'],
     includedRoutes: options['includedRoutes'],
