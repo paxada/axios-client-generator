@@ -1,7 +1,8 @@
 import { camelCase } from 'change-case';
 import * as _ from 'lodash';
-import { relative } from 'path';
-import { RouteData } from './type';
+import { join, relative } from 'path';
+import { AxiosClientConfig, RouteData } from './type';
+import { readFileSync } from 'fs-extra';
 
 export const getRoutePath = (routeFilePath: string): string => {
   const splitted = routeFilePath.split('/');
@@ -164,4 +165,37 @@ export const interpolateRoutePath = (routePath: string) => {
   return splitted
     .map((entry) => (entry.includes(':') ? `\$\{pathParams.${entry.replace(':', '')}\}` : entry))
     .join('/');
+};
+
+export const getAxiosClientConfig = (path: string, configFile: string): AxiosClientConfig => {
+  try {
+    const rawData = readFileSync(join(path, configFile)).toString();
+    const config = JSON.parse(rawData);
+
+    return {
+      folderName: 'folderName' in config && typeof config.folderName === 'string' ? config.folderName : undefined,
+      packageName: 'packageName' in config && typeof config.packageName === 'string' ? config.packageName : undefined,
+      extraExports:
+        'extraExports' in config &&
+        Array.isArray(config.extraExports) &&
+        config.extraExports.every((e) => typeof e === 'string')
+          ? config.extraExports
+          : undefined,
+      includedRoutes:
+        'includedRoutes' in config &&
+        Array.isArray(config.includedRoutes) &&
+        config.includedRoutes.every((e) => typeof e === 'string')
+          ? config.includedRoutes
+          : undefined,
+      excludedRoutes:
+        'excludedRoutes' in config &&
+        Array.isArray(config.excludedRoutes) &&
+        config.excludedRoutes.every((e) => typeof e === 'string')
+          ? config.excludedRoutes
+          : undefined,
+    };
+  } catch (e) {
+    console.log(`No axiosClient.config.json found at path: ${path}`);
+  }
+  return {};
 };

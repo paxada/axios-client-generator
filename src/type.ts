@@ -24,6 +24,7 @@ export type RouteData = {
 
 export type ClientMetadata = {
   clientFolder: string;
+  packageName: string;
   srcFolder: string;
   packageVersion: string;
   projectFolder: string;
@@ -51,4 +52,13 @@ export type ClientMetadata = {
   clientObject: string;
   routes: Array<RouteData>;
   clientMock: string;
+  extraExportPaths: Array<string>
 };
+
+export type AxiosClientConfig = {
+  folderName?: string;
+  packageName?: string;
+  extraExports?: Array<string>;
+  excludedRoutes?: Array<string>;
+  includedRoutes?: Array<string>;
+}

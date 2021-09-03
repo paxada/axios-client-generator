@@ -5,7 +5,7 @@ export const getPackageJsonData = (
   path: string,
 ): {
   name: string;
-  version: string;
+  version?: string;
   author: string;
   dependencies: Record<string, string>;
   devDependencies: Record<string, string>;
@@ -19,7 +19,7 @@ export const getPackageJsonData = (
     const dependencies = packageJson['dependencies'];
     const devDependencies = packageJson['devDependencies'];
     return {
-      version: version !== undefined && typeof version === 'string' ? version : '1.0.0',
+      version: version !== undefined && typeof version === 'string' ? version : undefined,
       name: name !== undefined && typeof name === 'string' ? name : 'unknown',
       author: author !== undefined && typeof author === 'string' ? name : 'unknown',
       dependencies:
@@ -38,5 +38,5 @@ export const getPackageJsonData = (
   } catch (e) {
     console.log(`No package.json found at path: ${path}`);
   }
-  return { version: '1.0.0', name: 'unknown', author: 'unknown', dependencies: {}, devDependencies: {} };
+  return { name: 'unknown', author: 'unknown', dependencies: {}, devDependencies: {} };
 };

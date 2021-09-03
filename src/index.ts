@@ -8,27 +8,20 @@ import { createFileFromHBS } from './handlebars.helpers';
 import {
   buildClientExportsString,
   buildClientImportString,
-  buildClientMock,
-  buildClientObject,
-  buildClientTypings,
   buildRelativeImport,
   buildTypeImportString,
-  formatClientObjectString,
-  formatClientTypingsString,
   interpolateRoutePath,
 } from './helpers';
 import { registerModuleAliases } from './moduleAliases.helpers';
-import { getAllRoutesFilePaths, getRouteSuccessInterface } from './projectParsing';
-import { buildRouteData } from './route.helper';
-import { ClientMetadata } from './type';
+import { getRouteSuccessInterface } from './projectParsing';
 import { compiledProjectPath, compileTypescriptProject } from './typescript_compiler';
 import { addAliasesInTsConfig } from './addAliasesInTsConfig';
-import { getPackageJsonData } from './getPackageJsonData';
-import { upgradePackageVersion } from './upgradePackageVersion';
-import { Command } from 'commander';
 import { checkExistingPaths } from './checkExistingPaths';
 import { createExportsString } from './createExportsString';
-import { getPeerDepsFromPaths } from './getPeerDepsFromPaths';
+import { getDepsFromPaths } from './getPeerDepsFromPaths';
+import { parseProject } from './parseProject';
+import { getCommandArgs } from './getCommandArgs';
+
 global.require = require;
 
 const sleep = (time: number) => new Promise((r) => setTimeout(r, time));
@@ -50,96 +43,8 @@ export const initializeProject = async (path) => {
   await runNpmInstall(path);
 };
 
-const parseProject = async (folderName?: string): Promise<ClientMetadata> => {
-  const routePaths = await getAllRoutesFilePaths();
-
-  const projectFolder = process.cwd();
-  const { name: serviceName, author } = getPackageJsonData(projectFolder);
-
-  const finalFolderName = folderName || `${serviceName}-client`;
-  const clientFolder = join(projectFolder, finalFolderName);
-  const srcFolder = join(clientFolder, 'src');
-  const { version: currentPackageVersion } = getPackageJsonData(clientFolder);
-
-  const newPackageVersion = upgradePackageVersion(currentPackageVersion);
-  const routes = await Promise.all(routePaths.map((routeFilePath) => buildRouteData(routeFilePath, srcFolder)));
-
-  const clientTypings = formatClientTypingsString(
-    await buildClientTypings(
-      routes.map((route) => ({
-        folders: route.folders,
-        data: route,
-      })),
-    ),
-  );
-
-  const clientObject = formatClientObjectString(
-    await buildClientObject(
-      routes.map((route) => ({
-        folders: route.folders,
-        data: route,
-      })),
-    ),
-  );
-
-  const clientMock = formatClientObjectString(
-    await buildClientMock(
-      routes.map((route) => ({
-        folders: route.folders,
-        data: route,
-      })),
-    ),
-  );
-
-  return {
-    clientFolder,
-    srcFolder,
-    packageVersion: newPackageVersion,
-    projectFolder,
-    folderName: finalFolderName,
-    author,
-    files: {
-      clientTypes: {
-        absolutePath: join(srcFolder, 'client.types.ts'),
-        name: 'client.types.ts',
-      },
-      index: {
-        absolutePath: join(srcFolder, 'index.ts'),
-        name: 'index.ts',
-      },
-      requestTypes: {
-        absolutePath: join(srcFolder, 'request.types.ts'),
-        name: 'request.types.ts',
-      },
-      requests: {
-        absolutePath: join(srcFolder, 'getAxiosClient.ts'),
-        name: 'getAxiosClient.ts',
-      },
-    },
-    clientTypings,
-    clientObject,
-    routes,
-    clientMock,
-  };
-};
-
-const getArgs = (): { extraExportPaths: Array<string>; folderName?: string; packageName?: string } => {
-  const program = new Command();
-  program
-    .option('-e, --extra-export <paths...>', 'Add extra export paths')
-    .option('-fn, --folder-name <string>', 'Package alias in package.json name')
-    .option('-pn, --package-name <string>', 'Package name');
-  program.parse(process.argv);
-  const options = program.opts();
-  return {
-    extraExportPaths: options['extraExport'] === undefined ? [] : options['extraExport'],
-    packageName: options['packageName'],
-    folderName: options['folderName'],
-  };
-};
-
 (async () => {
-  const { extraExportPaths, folderName, packageName } = getArgs();
+  const { extraExportPaths, folderName, packageName, configFile, includedRoutes, excludedRoutes } = getCommandArgs();
 
   console.log('Compiling api');
   const { error } = await compileTypescriptProject();
@@ -149,7 +54,14 @@ const getArgs = (): { extraExportPaths: Array<string>; folderName?: string; pack
   await registerModuleAliases(process.cwd());
 
   console.log('Parsing project');
-  const clientMetadata = await parseProject(folderName);
+  const clientMetadata = await parseProject({
+    folderName,
+    packageName,
+    excludedRoutes,
+    includedRoutes,
+    configFile,
+    extraExportPaths,
+  });
 
   console.log('Checking Extra exports');
   const isValidExtraExports = checkExistingPaths(
@@ -177,14 +89,14 @@ const getArgs = (): { extraExportPaths: Array<string>; folderName?: string; pack
   );
 
   const extraExports = createExportsString(
-    extraExportPaths.map((path) => ({
+    clientMetadata.extraExportPaths.map((path) => ({
       basePath: clientMetadata.srcFolder,
       targetPath: join(clientMetadata.projectFolder, path),
     })),
   );
-  const extraExportsPeerDeps = getPeerDepsFromPaths(
+  const extraExportsDeps = getDepsFromPaths(
     clientMetadata.projectFolder,
-    extraExportPaths.map((path) => join(clientMetadata.projectFolder, path)),
+    clientMetadata.extraExportPaths.map((path) => join(clientMetadata.projectFolder, path)),
   );
 
   const typeImports = buildTypeImportString(
@@ -223,9 +135,9 @@ const getArgs = (): { extraExportPaths: Array<string>; folderName?: string; pack
     templatePath: join(__dirname, 'templates', 'function', 'package.json.template.hbs'),
     data: {
       version: clientMetadata.packageVersion,
-      packageName,
-      folderName,
-      peerDependencies: extraExportsPeerDeps,
+      packageName: clientMetadata.packageName,
+      folderName: clientMetadata.folderName,
+      extraExportsDeps,
     },
     filePath: join(clientMetadata.clientFolder, 'package.json'),
   });
