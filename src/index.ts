@@ -63,7 +63,7 @@ export const initializeProject = async (path) => {
     extraExportPaths,
   });
 
-  console.log('Writing ' + folderName);
+  console.log('Writing ' + clientMetadata.clientFolder);
   await initializeProject(clientMetadata.clientFolder);
 
   const clientImports = buildClientImportString(
@@ -77,7 +77,7 @@ export const initializeProject = async (path) => {
   const clientExports = buildClientExportsString(
     clientMetadata.routes.map((route) => ({
       projectSourcePath: clientMetadata.srcFolder,
-      interfaceFilePath: route.interfaceFilePath,
+      interfaceFilePath: route?.interfaceFilePath,
       typeFilePath: route.generated.typeFilePath,
     })),
   );
@@ -151,8 +151,11 @@ export const initializeProject = async (path) => {
       templatePath: join(__dirname, 'templates', 'function', 'index.template.hbs'),
       filePath: route.generated.indexFilePath,
       data: {
-        routeSuccessInterface: getRouteSuccessInterface(route.interfaces.responsesInterfaces),
-        routeInterfaceRelativePath: buildRelativeImport(route.generated.folderPath, route.interfaceFilePath),
+        routeSuccessInterface: getRouteSuccessInterface(route.interfaces?.responsesInterfaces),
+        routeInterfaceRelativePath:
+          route.interfaceFilePath === undefined
+            ? undefined
+            : buildRelativeImport(route.generated.folderPath, route.interfaceFilePath),
         clientTypeRelativePath: buildRelativeImport(
           route.generated.folderPath,
           clientMetadata.files.clientTypes.absolutePath,
@@ -164,13 +167,13 @@ export const initializeProject = async (path) => {
         functionInterfaceRelativePath: buildRelativeImport(route.generated.folderPath, route.generated.typeFilePath),
         functionInterfaceName: route.functionInterfaceName,
         functionName: route.functionName,
-        bodyInterface: route.interfaces.bodyInterface,
-        queryInterface: route.interfaces.queryInterface,
-        pathParamsInterface: route.interfaces.pathInterface,
+        bodyInterface: route.interfaces?.bodyInterface,
+        queryInterface: route.interfaces?.queryInterface,
+        pathParamsInterface: route.interfaces?.pathInterface,
         method: route.method.toLocaleLowerCase(),
-        hasBody: route.interfaces.bodyInterface,
-        hasQuery: route.interfaces.queryInterface,
-        hasPathParams: route.interfaces.pathInterface,
+        hasBody: route.interfaces?.bodyInterface,
+        hasQuery: route.interfaces?.queryInterface,
+        hasPathParams: route.interfaces?.pathInterface,
         routePath: interpolateRoutePath(route.path),
       },
     });
@@ -178,19 +181,23 @@ export const initializeProject = async (path) => {
       templatePath: join(__dirname, 'templates', 'function', 'types.template.hbs'),
       filePath: route.generated.typeFilePath,
       data: {
-        routeInterfaceRelativePath: buildRelativeImport(route.generated.folderPath, route.interfaceFilePath),
+        routeInterfaceRelativePath:
+          route.interfaceFilePath === undefined
+            ? undefined
+            : buildRelativeImport(route.generated.folderPath, route.interfaceFilePath),
         requestTypeRelativePath: buildRelativeImport(
           route.generated.folderPath,
           clientMetadata.files.requestTypes.absolutePath,
         ),
         functionInterfaceName: route.functionInterfaceName,
-        routeSuccessInterface: getRouteSuccessInterface(route.interfaces.responsesInterfaces),
-        bodyInterface: route.interfaces.bodyInterface,
-        queryInterface: route.interfaces.queryInterface,
-        pathParamsInterface: route.interfaces.pathInterface,
-        hasBody: route.interfaces.bodyInterface,
-        hasQuery: route.interfaces.queryInterface,
-        hasPathParams: route.interfaces.pathInterface,
+        routeSuccessInterface:
+          route.interfaces === undefined ? undefined : getRouteSuccessInterface(route.interfaces.responsesInterfaces),
+        bodyInterface: route.interfaces?.bodyInterface,
+        queryInterface: route.interfaces?.queryInterface,
+        pathParamsInterface: route.interfaces?.pathInterface,
+        hasBody: route.interfaces?.bodyInterface,
+        hasQuery: route.interfaces?.queryInterface,
+        hasPathParams: route.interfaces?.pathInterface,
       },
     });
   });

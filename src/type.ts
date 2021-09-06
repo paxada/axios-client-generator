@@ -4,8 +4,8 @@ export type RouteData = {
   name: string;
   routeFilePath: string;
   interfaceFilePath: string;
-  interfaceContent: string;
-  interfaces: RouteInterfaces;
+  interfaceContent?: string;
+  interfaces?: RouteInterfaces;
   routePath: string;
   folders: Array<string>;
   documentationFilePath: string;
@@ -52,7 +52,7 @@ export type ClientMetadata = {
   clientObject: string;
   routes: Array<RouteData>;
   clientMock: string;
-  extraExportPaths: Array<string>
+  extraExportPaths: Array<string>;
 };
 
 export type AxiosClientConfig = {
@@ -61,4 +61,4 @@ export type AxiosClientConfig = {
   extraExports?: Array<string>;
   excludedRoutes?: Array<string>;
   includedRoutes?: Array<string>;
-}
+};

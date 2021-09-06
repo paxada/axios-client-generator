@@ -1,5 +1,5 @@
 import { camelCase, pascalCase } from 'change-case';
-import { readFileSync } from 'fs-extra';
+import { pathExistsSync, readFileSync } from 'fs-extra';
 import { join } from 'path';
 import { getExportedMembersFromFile } from './files.helpers';
 import { extractRouteInterfaces, getRouteFolders, getRouteName, getRoutePath } from './helpers';
@@ -9,9 +9,10 @@ import { RouteData } from './type';
 export const buildRouteData = async (routeFilePath: string, srcFolder: string): Promise<RouteData> => {
   const routePath = getRoutePath(routeFilePath);
   const name = getRouteName(routePath);
-  const interfaceFilePath = (await getRouteInterfaceFilePath(routePath))[0];
-  const interfaceContent = readFileSync(interfaceFilePath).toString();
-  const interfaces = extractRouteInterfaces(interfaceContent);
+  const builtInterfaceFilePath = (await getRouteInterfaceFilePath(routePath))[0];
+  const interfaceFilePath = pathExistsSync(builtInterfaceFilePath) ? builtInterfaceFilePath : undefined;
+  const interfaceContent = interfaceFilePath !== undefined ? readFileSync(interfaceFilePath).toString() : undefined;
+  const interfaces = interfaceContent === undefined ? undefined : extractRouteInterfaces(interfaceContent);
   const documentationFilePath = (await getRouteDocumentationFilePath(routePath))[0];
   const documentationExportedMembers = getExportedMembersFromFile(documentationFilePath);
   const folders = getRouteFolders(routePath);

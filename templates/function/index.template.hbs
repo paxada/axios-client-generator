@@ -2,12 +2,12 @@ import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as urlJoin from 'url-join';
-import { 
+{{#if routeInterfaceRelativePath }}import {
     {{#if hasBody}} {{{ bodyInterface }}}, {{/if}}
     {{#if hasQuery}} {{{ queryInterface }}}, {{/if}}
     {{#if hasPathParams}} {{{ pathParamsInterface }}}, {{/if}}
     {{{ routeSuccessInterface }}}
-} from '{{{ routeInterfaceRelativePath }}}';
+} from '{{{ routeInterfaceRelativePath }}}';{{/if}}
 import { BaseParams } from '{{{ clientTypeRelativePath }}}';
 import { RequestError, RequestSuccess } from '{{{ requestTypeRelativePath }}}';
 import { {{{ functionInterfaceName }}} } from './{{{ functionInterfaceRelativePath }}}';

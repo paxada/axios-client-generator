@@ -1,9 +1,9 @@
-import { 
+{{#if routeInterfaceRelativePath }}import {
     {{#if hasBody}} {{{ bodyInterface }}}, {{/if}}
     {{#if hasQuery}} {{{ queryInterface }}}, {{/if}}
     {{#if hasPathParams}} {{{ pathParamsInterface }}}, {{/if}}
     {{{ routeSuccessInterface }}}    
-} from '{{{ routeInterfaceRelativePath }}}';
+} from '{{{ routeInterfaceRelativePath }}}';{{/if}}
 import { RequestError, RequestSuccess } from '{{{ requestTypeRelativePath }}}';
 
 export type {{{ functionInterfaceName }}} = ({{#ifOr hasBody hasQuery hasPathParams}}params: {

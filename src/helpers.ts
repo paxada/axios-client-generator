@@ -147,15 +147,19 @@ export const buildClientImportString = (
 export const buildClientExportsString = (
   data: Array<{
     projectSourcePath: string;
-    interfaceFilePath: string;
+    interfaceFilePath?: string;
     typeFilePath: string;
   }>,
 ): string => {
   return data
-    .map(({ projectSourcePath, interfaceFilePath, typeFilePath }) => [
-      `export * from '${buildRelativeImport(projectSourcePath, interfaceFilePath)}'`,
-      `export * from './${buildRelativeImport(projectSourcePath, typeFilePath)}'`,
-    ])
+    .map(({ projectSourcePath, interfaceFilePath, typeFilePath }) => {
+      return [
+        ...(interfaceFilePath === undefined
+          ? []
+          : [`export * from '${buildRelativeImport(projectSourcePath, interfaceFilePath)}'`]),
+        `export * from './${buildRelativeImport(projectSourcePath, typeFilePath)}'`,
+      ];
+    })
     .flat()
     .join('\n');
 };
