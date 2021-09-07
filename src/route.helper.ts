@@ -10,7 +10,8 @@ export const buildRouteData = async (routeFilePath: string, srcFolder: string): 
   const routePath = getRoutePath(routeFilePath);
   const name = getRouteName(routePath);
   const builtInterfaceFilePath = (await getRouteInterfaceFilePath(routePath))[0];
-  const interfaceFilePath = pathExistsSync(builtInterfaceFilePath) ? builtInterfaceFilePath : undefined;
+  const interfaceFilePath =
+    builtInterfaceFilePath === undefined || pathExistsSync(builtInterfaceFilePath) ? builtInterfaceFilePath : undefined;
   const interfaceContent = interfaceFilePath !== undefined ? readFileSync(interfaceFilePath).toString() : undefined;
   const interfaces = interfaceContent === undefined ? undefined : extractRouteInterfaces(interfaceContent);
   const documentationFilePath = (await getRouteDocumentationFilePath(routePath))[0];
