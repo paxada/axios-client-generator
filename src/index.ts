@@ -198,6 +198,7 @@ export const initializeProject = async (path) => {
         hasBody: route.interfaces?.bodyInterface,
         hasQuery: route.interfaces?.queryInterface,
         hasPathParams: route.interfaces?.pathInterface,
+        shouldHaveDefaultBody: ['put', 'post'].includes(route.method) && !route.interfaces.bodyInterface,
       },
     });
   });
