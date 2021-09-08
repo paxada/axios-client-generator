@@ -6,7 +6,8 @@
       "outDir": "./dist",
       "strict": true,
       "allowSyntheticDefaultImports": true,
-      "baseUrl": "src"
+      "baseUrl": "src",
+      "skipLibCheck": true
     },
     "jsRules": {
       "no-empty": true
