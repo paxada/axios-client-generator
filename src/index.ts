@@ -175,6 +175,7 @@ export const initializeProject = async (path) => {
         hasQuery: route.interfaces?.queryInterface,
         hasPathParams: route.interfaces?.pathInterface,
         routePath: interpolateRoutePath(route.path),
+        shouldHaveDefaultBody: ['put', 'post'].includes(route.method) && !route.interfaces?.bodyInterface,
       },
     });
     createFileFromHBS({
@@ -198,7 +199,7 @@ export const initializeProject = async (path) => {
         hasBody: route.interfaces?.bodyInterface,
         hasQuery: route.interfaces?.queryInterface,
         hasPathParams: route.interfaces?.pathInterface,
-        shouldHaveDefaultBody: ['put', 'post'].includes(route.method) && !route.interfaces.bodyInterface,
+        shouldHaveDefaultBody: ['put', 'post'].includes(route.method) && !route.interfaces?.bodyInterface,
       },
     });
   });
