@@ -81,7 +81,7 @@ export const buildClientTypings = (
 };
 
 export const formatClientTypingsString = (clientTypings: ClientTypings): string => {
-  const stringified = JSON.stringify(clientTypings).replaceAll('"', '');
+  const stringified = JSON.stringify(clientTypings).replace(/"/g, '');
   return stringified.slice(1, stringified.length - 1);
 };
 
@@ -110,7 +110,7 @@ export const buildClientMock = (
 };
 
 export const formatClientObjectString = (clientObject: ClientObject): string => {
-  const stringified = JSON.stringify(clientObject).replaceAll('"', '');
+  const stringified = JSON.stringify(clientObject).replace(/"/g, '');
   return stringified.slice(1, stringified.length - 1);
 };
 
