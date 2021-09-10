@@ -6,7 +6,7 @@ Create an axios client package from a paxada project.
 
 Add in your `package.json`, in `"scripts"` field :
 ```
-"generate:client": "node paxada-axios-client-generate",
+"generate:client": "paxada-axios-client-generate",
 "client:publish": "cd {packageName} && npm run build && npm publish" 
 ```
 
