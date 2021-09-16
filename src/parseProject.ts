@@ -1,5 +1,5 @@
 import { ClientMetadata } from './type';
-import { getAllRoutesFilePaths } from './projectParsing';
+import { getAllEntityInterfacesFilePaths, getAllRoutesFilePaths } from './projectParsing';
 import { getPackageJsonData } from './getPackageJsonData';
 import {
   buildClientMock,
@@ -34,6 +34,8 @@ export const parseProject = async (params: {
     includedRoutes || axiosClientConfig.includedRoutes || [],
     excludedRoutes || axiosClientConfig.excludedRoutes || [],
   );
+
+  const entityInterfacesPaths = await getAllEntityInterfacesFilePaths(projectFolder);
 
   const finalFolderName = folderName || axiosClientConfig.folderName || `${serviceName}-client`;
   const finalPackageName = packageName || axiosClientConfig.packageName || `${serviceName}-client`;
@@ -108,5 +110,6 @@ export const parseProject = async (params: {
     clientMock,
     packageName: finalPackageName,
     extraExportPaths: finalExtraExportPaths,
+    entityInterfacesPaths,
   };
 };

@@ -53,6 +53,7 @@ export type ClientMetadata = {
   routes: Array<RouteData>;
   clientMock: string;
   extraExportPaths: Array<string>;
+  entityInterfacesPaths: Array<string>;
 };
 
 export type AxiosClientConfig = {

@@ -16,7 +16,6 @@ import { registerModuleAliases } from './moduleAliases.helpers';
 import { getRouteSuccessInterface } from './projectParsing';
 import { compiledProjectPath, compileTypescriptProject } from './typescript_compiler';
 import { addAliasesInTsConfig } from './addAliasesInTsConfig';
-import { checkExistingPaths } from './checkExistingPaths';
 import { createExportsString } from './createExportsString';
 import { getDepsFromPaths } from './getPeerDepsFromPaths';
 import { parseProject } from './parseProject';
@@ -101,6 +100,16 @@ export const initializeProject = async (path) => {
     })),
   );
 
+  const entitiesInterfacesExports = createExportsString(
+    clientMetadata.entityInterfacesPaths.map((path) => ({
+      basePath: clientMetadata.srcFolder,
+      targetPath: path,
+    })),
+  );
+
+  await insert(entitiesInterfacesExports)
+    .aboveLineContaining('[INSERT EXPORTS]')
+    .inFile(clientMetadata.files.index.absolutePath);
   await insert(clientExports).aboveLineContaining('[INSERT EXPORTS]').inFile(clientMetadata.files.index.absolutePath);
   await insert(extraExports).aboveLineContaining('[INSERT EXPORTS]').inFile(clientMetadata.files.index.absolutePath);
 

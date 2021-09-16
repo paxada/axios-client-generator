@@ -26,6 +26,10 @@ export const getAllRoutesFilePaths = async (
     }),
   );
 };
+export const getAllEntityInterfacesFilePaths = async (path: string): Promise<Array<string>> => {
+  const entitiesPath = join(path, 'src', 'entities');
+  return filesMatching(join(entitiesPath, '**/*', '*.interfaces.ts'));
+};
 
 export const getRouteInterfaceFilePath = async (routePath: string): Promise<Array<string>> => {
   return filesMatching(join(routePath, '*.interfaces.ts'));
