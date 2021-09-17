@@ -25,10 +25,24 @@ export const {{{ functionName }}} = ({ baseUrl, headers }: BaseParams): {{{ func
 const result = await axios.{{{ method }}}<{{#if routeSuccessInterface}}{{{ routeSuccessInterface }}}{{/if}}{{#ifNot routeSuccessInterface}}void{{/ifNot}}>(url,{{#if hasBody}} body,{{/if}}{{#if shouldHaveDefaultBody}}{},{{/if}} { headers{{#if hasQuery}}, params: query{{/if}} });
         return { hasFailed: false, status: result.status, data: result.data };
     } catch (e) {
+        if (e.response !== undefined) {
+            return {
+                hasFailed: true,
+                status: e.response.status,
+                error: e.response.data,
+            };
+        }
+        if (e.request !== undefined) {
+            return {
+                hasFailed: true,
+                status: 503,
+                error: e.request,
+            };
+        }
         return {
             hasFailed: true,
-            status: e?.response?.status,
-            error: e?.response?.data,
+            status: 500,
+            error: e.message,
         };
     }
 };
