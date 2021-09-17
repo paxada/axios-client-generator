@@ -10,7 +10,6 @@ import {
   getAxiosClientConfig,
 } from './helpers';
 import { join } from 'path';
-import { upgradePackageVersion } from './upgradePackageVersion';
 import { buildRouteData } from './route.helper';
 import { checkExistingPaths } from './checkExistingPaths';
 
@@ -48,8 +47,7 @@ export const parseProject = async (params: {
   const srcFolder = join(clientFolder, 'src');
   const { version: currentPackageVersion } = getPackageJsonData(clientFolder);
 
-  const newPackageVersion =
-    currentPackageVersion === undefined ? '1.0.0' : upgradePackageVersion(currentPackageVersion);
+  const newPackageVersion = currentPackageVersion || '1.0.0';
   const routes = await Promise.all(routePaths.map((routeFilePath) => buildRouteData(routeFilePath, srcFolder)));
 
   const clientTypings = formatClientTypingsString(
