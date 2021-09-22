@@ -41,7 +41,7 @@ export const getRouteDocumentationFilePath = async (routePath: string): Promise<
 
 export const getRouteSuccessInterface = (interfaces?: Array<string>) => {
   return interfaces?.find((response) => {
-    const status = +response.match(/\d+/)?.[0];
+    const status = +response.match(/\d+$/)?.[0];
     return Number.isNaN(status) ? false : status >= 200 && status < 300;
   });
 };
