@@ -18,15 +18,15 @@ export type RouteInterfaces = {
 };
 
 export const extractRouteInterfaces = (fileContent: string): RouteInterfaces => {
-  const pathInterfaceRegex = new RegExp(/\w*Path/);
-  const queryInterfaceRegex = new RegExp(/\w*Query/);
-  const bodyInterfaceRegex = new RegExp(/\w*Body/);
-  const responseInterfaceRegex = new RegExp(/\w*Response\d*/g);
+  const pathInterfaceRegex = new RegExp(/(interface|type) (\w+Path)/);
+  const queryInterfaceRegex = new RegExp(/(interface|type) (\w+Query)/);
+  const bodyInterfaceRegex = new RegExp(/(interface|type) (\w+Body)/);
+  const responseInterfaceRegex = new RegExp(/(interface|type) (\w+Response\d*)/g);
   return {
-    pathInterface: fileContent.match(pathInterfaceRegex)?.[0],
-    queryInterface: fileContent.match(queryInterfaceRegex)?.[0],
-    bodyInterface: fileContent.match(bodyInterfaceRegex)?.[0],
-    responsesInterfaces: [...fileContent.matchAll(responseInterfaceRegex)].map((results) => results[0]),
+    pathInterface: fileContent.match(pathInterfaceRegex)?.[2],
+    queryInterface: fileContent.match(queryInterfaceRegex)?.[2],
+    bodyInterface: fileContent.match(bodyInterfaceRegex)?.[2],
+    responsesInterfaces: [...fileContent.matchAll(responseInterfaceRegex)].map((results) => results[2]),
   };
 };
 
