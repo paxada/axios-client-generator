@@ -82,11 +82,18 @@ const createMyProjectClient = (url: string) => {
 export const getMyProjectClient = (): AxiosClient => {
     if (myProjectClient === undefined) {
         if (MY_PROJECT_API_URL === undefined) throw new Error('Missing MY_PROJECT_API_URL');
-        myProjectClient = createBouncerClient(BOUNCER_API_URL);
+        myProjectClient = createMyProjectClient(MY_PROJECT_API_URL);
     }
     return myProjectClient;
 };
 
+```
+
+### Response type
+```typescript
+type Response<Data> = 
+    | { hasFailed: true; error: { code: string; message: string } }
+    | { hasFailed: false; data: Data }
 ```
 
 ### Initialize your client mock method on another project
@@ -107,11 +114,11 @@ export const mockMyProjectClient = () => {
 `.test.ts` file
 ```typescript
 import { mockMyProjectClient } from '@/helpers/mockMyProjectClient';
-import { getMyProjectCLient } from '@/loaders/myProjectClient';
+import { getMyProjectClient } from '@/loaders/myProjectClient';
 
 const doSomething = async () => {
     const myProjectClient = getMyProjectClient()
-    const response = myProjectClient.setHeaders({ machin: "chouette" }).private.entity.getMethod();
+    const response = await myProjectClient.setHeaders({ machin: "chouette" }).private.entity.getMethod();
     if (data.hasFailed) return "error";
     return response.data;
 }
