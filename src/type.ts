@@ -7,6 +7,7 @@ export type RouteData = {
   interfaceContent?: string;
   interfaces?: RouteInterfaces;
   routePath: string;
+  description: string;
   folders: Array<string>;
   documentationFilePath: string;
   method: 'get' | 'post' | 'put' | 'delete';
@@ -54,6 +55,7 @@ export type ClientMetadata = {
   clientMock: string;
   extraExportPaths: Array<string>;
   entityInterfacesPaths: Array<string>;
+  clientDocs: string;
 };
 
 export type AxiosClientConfig = {

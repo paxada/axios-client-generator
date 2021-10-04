@@ -2,9 +2,11 @@ import { ClientMetadata } from './type';
 import { getAllEntityInterfacesFilePaths, getAllRoutesFilePaths } from './projectParsing';
 import { getPackageJsonData } from './getPackageJsonData';
 import {
+  buildClientDocs,
   buildClientMock,
   buildClientObject,
   buildClientTypings,
+  formatClientDocsString,
   formatClientObjectString,
   formatClientTypingsString,
   getAxiosClientConfig,
@@ -52,6 +54,15 @@ export const parseProject = async (params: {
 
   const clientTypings = formatClientTypingsString(
     await buildClientTypings(
+      routes.map((route) => ({
+        folders: route.folders,
+        data: route,
+      })),
+    ),
+  );
+
+  const clientDocs = formatClientDocsString(
+    await buildClientDocs(
       routes.map((route) => ({
         folders: route.folders,
         data: route,
@@ -109,5 +120,6 @@ export const parseProject = async (params: {
     packageName: finalPackageName,
     extraExportPaths: finalExtraExportPaths,
     entityInterfacesPaths,
+    clientDocs,
   };
 };

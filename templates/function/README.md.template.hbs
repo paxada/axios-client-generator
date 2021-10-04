@@ -1,0 +1,76 @@
+# {{{packageName}}}
+
+## Install
+`npm i {{{packageName}}}`
+
+## Initialize the client in your project
+Example:\
+`src/lib/{{{folderNameCC}}}.ts`
+```typescript
+import { getAxiosClient, AxiosClient } from '{{{packageName}}}';
+import { CLIENT_API_URL } from '@/config';
+
+let {{{folderNameCC}}}: AxiosClient | undefined;
+
+const create{{{folderNameUpperCC}}} = (url: string) => {
+    return getAxiosClient({ baseUrl: url, headers: {} });
+};
+
+export const get{{{folderNameUpperCC}}} = (): AxiosClient => {
+    if ({{{folderNameCC}}} === undefined) {
+        if (CLIENT_API_URL === undefined) throw new Error('Missing CLIENT_API_URL');
+        {{{folderNameCC}}} = create{{{folderNameUpperCC}}}(CLIENT_API_URL);
+    }
+    return {{{folderNameCC}}};
+};
+
+```
+
+## Response type
+```typescript
+type Response<Data> = 
+    | { hasFailed: true; error: { code: string; message: string } }
+    | { hasFailed: false; data: Data }
+```
+
+## Initialize the client mock method on your project
+`src/helpers/mock{{{folderNameUpperCC}}}`
+```typescript
+import { mockAxiosClient } from '{{{packageName}}}';
+import * as {{{folderNameCC}}} from '../lib/{{{folderNameCC}}}';
+
+export const mock{{{folderNameUpperCC}}} = () => {
+    const mocked = mockAxiosClient<jest.Mock>(jest.fn);
+    jest.spyOn({{{folderNameCC}}}, 'get{{{folderNameUperCC}}}').mockReturnValue(mocked);
+    return mocked;
+};
+
+```
+
+## How to use the client mock
+`.test.ts` file
+```typescript
+import { mock{{{folderNameUpperCC}}} } from '@/helpers/mock{{{folderNameUpperCC}}}';
+import { get{{{folderNameUpperCC}}} } from '@/lib/{{{folderNameCC}}}';
+
+const doSomething = async () => {
+    const {{{folderNameCC}}} = get{{{folderNameUpperCC}}}()
+    const response = await {{{folderNameCC}}}.setHeaders({ machin: "chouette" }).private.entity.getMethod();
+    if (data.hasFailed) return "error";
+    return response.data;
+}
+
+describe(() => {
+    it ("Should call the mocked method", async () => {
+        const {{{folderNameCC}}}Mock = mock{{{folderNameUperCC}}}();
+        {{{folderNameCC}}}Mock.private.entity.getMethod.mockResolvedValue({ hasFailed: false, data: "bidule" });
+        
+        const result = await doSomething();
+        
+        expect({{{folderNameCC}}}Mock.private.entity.getMethod).toHaveBeenCalled();
+        expect(result).toBe("bidule");
+    })
+})
+```
+## Methods
+{{{documentation}}}

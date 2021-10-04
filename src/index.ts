@@ -20,6 +20,7 @@ import { createExportsString } from './createExportsString';
 import { getDepsFromPaths } from './getPeerDepsFromPaths';
 import { parseProject } from './parseProject';
 import { getCommandArgs } from './getCommandArgs';
+import { camelCase, capitalize } from 'lodash';
 
 global.require = require;
 
@@ -143,6 +144,19 @@ export const initializeProject = async (path) => {
       extraExportsDeps,
     },
     filePath: join(clientMetadata.clientFolder, 'package.json'),
+  });
+
+  console.log('Creating README.md');
+  createFileFromHBS({
+    templatePath: join(__dirname, 'templates', 'function', 'README.md.template.hbs'),
+    data: {
+      packageName: clientMetadata.packageName,
+      folderName: clientMetadata.folderName,
+      folderNameCC: camelCase(clientMetadata.folderName),
+      folderNameUpperCC: capitalize(camelCase(clientMetadata.folderName)),
+      documentation: clientMetadata.clientDocs,
+    },
+    filePath: join(clientMetadata.clientFolder, 'README.md'),
   });
 
   console.log('Creating mock');

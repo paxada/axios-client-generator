@@ -80,9 +80,37 @@ export const buildClientTypings = (
   });
 };
 
+export const buildClientDocs = (
+  foldersStructure: Array<{
+    folders: Array<string>;
+    data: RouteData;
+  }>,
+): Promise<ClientTypings> => {
+  return buildClientObjectFromFolderStructures(foldersStructure, async (folders, data) => {
+    return data.description;
+  });
+};
+
 export const formatClientTypingsString = (clientTypings: ClientTypings): string => {
   const stringified = JSON.stringify(clientTypings).replace(/"/g, '');
   return stringified.slice(1, stringified.length - 1);
+};
+
+export const formatClientDocsString = (
+  clientDocs: FolderStuctureObject<string> | string | undefined,
+  deep = 0,
+): string => {
+  if (clientDocs === undefined) return 'unknown';
+  if (typeof clientDocs === 'string') return `: *${clientDocs}*`;
+  const tabs = Array(deep)
+    .fill(null)
+    .map((_) => '\t')
+    .join('');
+  return Object.keys(clientDocs)
+    .map((key) => {
+      return `\n${tabs}- **${key}**${formatClientDocsString(clientDocs[key], deep + 1)}`;
+    })
+    .join('');
 };
 
 export type ClientObject = FolderStuctureObject<string>;

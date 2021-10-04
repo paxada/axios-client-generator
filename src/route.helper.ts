@@ -32,6 +32,7 @@ export const buildRouteData = async (routeFilePath: string, srcFolder: string): 
     documentationFilePath,
     method: route.method,
     path: route.path,
+    description: route.description,
     functionName: camelCase(name),
     functionInterfaceName: pascalCase(name),
     generated: {
