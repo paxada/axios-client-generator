@@ -47,7 +47,7 @@ export const initializeProject = async (path) => {
   const { extraExportPaths, folderName, packageName, configFile, includedRoutes, excludedRoutes } = getCommandArgs();
 
   console.log('Compiling api');
-  const { error } = await compileTypescriptProject();
+  const { error, stdout, stderr } = await compileTypescriptProject();
   if (error) throw new Error(error.message);
 
   console.log('Registering aliases');
