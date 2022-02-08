@@ -18,12 +18,13 @@ export const filesMatching = (globString: string) => {
   return new Promise<Array<string>>((res) => glob(globString, (err, files) => res(files)));
 };
 
-export const getExportedMembersFromFile = (filePath: string) => {
+export const getExportedMembersFromFile = async (filePath: string) => {
   try {
     if (!filePath || (!filePath.endsWith('.js') && !filePath.endsWith('.ts'))) return false;
-    const finalFilePath = filePath.endsWith('.js')
+    const finalFilePathMatch = filePath.endsWith('.js')
       ? filePath
-      : join(compiledProjectPath, relative(join(process.cwd(), 'src'), filePath)).replace('.ts', '.js');
+      : join(compiledProjectPath, "**", relative(join(process.cwd(), 'src'), filePath)).replace('.ts', '.js');
+    const finalFilePath = (await filesMatching(finalFilePathMatch))[0]
     const requiredFile = global.require(finalFilePath);
     return requiredFile;
   } catch (error) {

@@ -37,8 +37,8 @@ const getDepsFromPath = (path: string, moduleAliases: Record<string, string>): A
   return [...npmDeps, ...deeperNpmDeps];
 };
 
-export const getDepsFromPaths = (basePath: string, paths: Array<string>) => {
-  const moduleAliases = getModuleAlisases(basePath, basePath);
+export const getDepsFromPaths = async (basePath: string, paths: Array<string>) => {
+  const moduleAliases = await getModuleAlisases(basePath, basePath);
   const deps = paths.map((path) => getDepsFromPath(path, moduleAliases)).flat();
   const uniqueDeps = [...new Set(deps)];
 

@@ -88,7 +88,7 @@ export const initializeProject = async (path) => {
       targetPath: join(clientMetadata.projectFolder, path),
     })),
   );
-  const extraExportsDeps = getDepsFromPaths(
+  const extraExportsDeps = await getDepsFromPaths(
     clientMetadata.projectFolder,
     clientMetadata.extraExportPaths.map((path) => join(clientMetadata.projectFolder, path)),
   );

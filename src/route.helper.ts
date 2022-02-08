@@ -15,7 +15,7 @@ export const buildRouteData = async (routeFilePath: string, srcFolder: string): 
   const interfaceContent = interfaceFilePath !== undefined ? readFileSync(interfaceFilePath).toString() : undefined;
   const interfaces = interfaceContent === undefined ? undefined : extractRouteInterfaces(interfaceContent);
   const documentationFilePath = (await getRouteDocumentationFilePath(routePath))[0];
-  const documentationExportedMembers = getExportedMembersFromFile(documentationFilePath);
+  const documentationExportedMembers = await getExportedMembersFromFile(documentationFilePath);
   const folders = getRouteFolders(routePath);
   const generatedTypeFileName = `${camelCase(name)}.types.ts`;
   const generatedFunctionFileName = `${camelCase(name)}.client.ts`;
