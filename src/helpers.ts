@@ -199,7 +199,10 @@ export const interpolateRoutePath = (routePath: string) => {
     .join('/');
 };
 
-export const getAxiosClientConfig = (path: string, configFile: string): AxiosClientConfig => {
+export const getAxiosClientConfig = (
+  path: string,
+  configFile: string = 'axiosClient.config.json',
+): AxiosClientConfig => {
   try {
     const rawData = readFileSync(join(path, configFile)).toString();
     const config = JSON.parse(rawData);
@@ -207,6 +210,8 @@ export const getAxiosClientConfig = (path: string, configFile: string): AxiosCli
     return {
       folderName: 'folderName' in config && typeof config.folderName === 'string' ? config.folderName : undefined,
       packageName: 'packageName' in config && typeof config.packageName === 'string' ? config.packageName : undefined,
+      tsConfigPath:
+        'tsConfigPath' in config && typeof config.tsConfigPath === 'string' ? config.tsConfigPath : undefined,
       extraExports:
         'extraExports' in config &&
         Array.isArray(config.extraExports) &&
@@ -227,7 +232,7 @@ export const getAxiosClientConfig = (path: string, configFile: string): AxiosCli
           : undefined,
     };
   } catch (e) {
-    console.log(`No axiosClient.config.json found at path: ${path}`);
+    console.log(`No ${configFile} found at path: ${path}`);
   }
   return {};
 };

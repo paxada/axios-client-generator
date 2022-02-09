@@ -10,6 +10,7 @@ import {
   buildClientImportString,
   buildRelativeImport,
   buildTypeImportString,
+  getAxiosClientConfig,
   interpolateRoutePath,
 } from './helpers';
 import { registerModuleAliases } from './moduleAliases.helpers';
@@ -44,10 +45,20 @@ export const initializeProject = async (path) => {
 };
 
 (async () => {
-  const { extraExportPaths, folderName, packageName, configFile, includedRoutes, excludedRoutes } = getCommandArgs();
+  const {
+    extraExportPaths,
+    folderName,
+    packageName,
+    configFile,
+    includedRoutes,
+    excludedRoutes,
+    tsConfigPath,
+  } = getCommandArgs();
+
+  const axiosClientConfig = await getAxiosClientConfig(process.cwd(), configFile);
 
   console.log('Compiling api');
-  const { error, stdout, stderr } = await compileTypescriptProject();
+  const { error } = await compileTypescriptProject(tsConfigPath || axiosClientConfig.tsConfigPath);
   if (error) throw new Error(error.message);
 
   console.log('Registering aliases');

@@ -64,4 +64,5 @@ export type AxiosClientConfig = {
   extraExports?: Array<string>;
   excludedRoutes?: Array<string>;
   includedRoutes?: Array<string>;
+  tsConfigPath?: string;
 };

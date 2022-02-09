@@ -23,8 +23,9 @@ export const getExportedMembersFromFile = async (filePath: string) => {
     if (!filePath || (!filePath.endsWith('.js') && !filePath.endsWith('.ts'))) return false;
     const finalFilePathMatch = filePath.endsWith('.js')
       ? filePath
-      : join(compiledProjectPath, "**", relative(join(process.cwd(), 'src'), filePath)).replace('.ts', '.js');
-    const finalFilePath = (await filesMatching(finalFilePathMatch))[0]
+      : join(compiledProjectPath, '**', relative(join(process.cwd(), 'src'), filePath)).replace('.ts', '.js');
+    const finalFilePath = (await filesMatching(finalFilePathMatch))[0];
+    if (finalFilePath === undefined) throw new Error(`Could not find finalFilePath for ${finalFilePathMatch}`);
     const requiredFile = global.require(finalFilePath);
     return requiredFile;
   } catch (error) {
