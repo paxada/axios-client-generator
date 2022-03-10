@@ -1,9 +1,10 @@
 import { AxiosClient, BaseParams } from './client.types';
+import { AxiosRequestHeaders } from 'axios';
 // [INSERT IMPORTS]
 
 export const getAxiosClient = (baseParams: BaseParams): AxiosClient => {
     return {
-        setHeaders: (headers: Record<string, unknown>) => {
+        setHeaders: (headers: AxiosRequestHeaders) => {
             return getAxiosClient({ ...baseParams, headers });
         },
         setBaseUrl: (baseUrl: string) => {
