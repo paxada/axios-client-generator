@@ -1,6 +1,6 @@
 {
   "name": "@paxada/axios-client-generator",
-  "version": "1.0.55",
+  "version": "1.0.56",
   "description": "",
   "main": "dist/index.js",
   "repository": {
